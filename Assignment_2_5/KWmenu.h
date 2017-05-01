@@ -1,6 +1,7 @@
 #pragma once
 
 #include "KWmanager.h"
+
 class KWmenu {
 
 	static const size_t NUMBER_OF_MENU = 7;

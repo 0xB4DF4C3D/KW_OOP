@@ -5,7 +5,7 @@
 
 using namespace std;
 
-// This function is only used in MusicListManipulator this file, and it opens the file safely.
+// Open the file safely.
 void validFileOpen(fstream& stream, const char* fileName, int mode = 3) {
 	stream.open(fileName, mode);
 
@@ -62,21 +62,22 @@ StudentManager::~StudentManager() {
 }
 
 void StudentManager::printItem(Student::Days day, OOP::SortKeys sortKey) {
+
 	switch (day) {
 	case Student::Days::WED:
-		mWed.PrintTitle(static_cast<int>(sortKey));
+		mWed.PrintTitle(sortKey);
 		mWed.printAll(sortKey);
 		break;
 	case Student::Days::THU:
-		mThu.PrintTitle(static_cast<int>(sortKey));
+		mThu.PrintTitle(sortKey);
 		mThu.printAll(sortKey);
 		break;
 	case Student::Days::FRI:
-		mFri.PrintTitle(static_cast<int>(sortKey));
+		mFri.PrintTitle(sortKey);
 		mFri.printAll(sortKey);
 		break;
 	case Student::Days::NON:
-		mNone.PrintTitle(static_cast<int>(sortKey));
+		mNone.PrintTitle(sortKey);
 		mNone.printAll(sortKey);
 		break;
 	}

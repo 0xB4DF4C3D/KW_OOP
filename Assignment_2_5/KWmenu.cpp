@@ -152,7 +152,18 @@ void KWmenu::menu_delete() {
 }
 
 void KWmenu::menu_print() {
-	mKWmanager.printItem();
+
+	cout << "1. Sequence    "
+		<< "2. Name    "
+		<< "3. Price    "
+		<< "4. Quantity" << endl;
+
+	int sortType;
+	do {  // Repeat until the correct value is entered in sortType.
+		cout << "> Input number : ";
+	} while (safeNumInput(cin, sortType, 1, 4));
+
+	mKWmanager.printItem(static_cast<Item::PROP>(sortType));
 }
 
 void KWmenu::menu_save() {

@@ -4,6 +4,8 @@
 *.sln
 *.vcxproj
 *.vcxproj.filters
+*.docx
+*.cd
 
 ### C++ ###
 # Prerequisites

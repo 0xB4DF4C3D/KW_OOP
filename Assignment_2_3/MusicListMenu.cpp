@@ -171,5 +171,5 @@ void MusicListMenu::menu_sort() {
 		cout << "> Input number : ";
 	} while (safeNumInput(cin, sortType, 1, 4));
 
-	mManipulator.sortMusic(sortType);
+	mManipulator.sortMusic(static_cast<Music::PROP>(sortType));
 }

@@ -12,16 +12,16 @@ int main() {
 	cout.setf(ios::fixed); // Set the decimal precision of the cout stream to 1.
 	cout.precision(1);
 	
-	// Set the maximum number of characters to be read at once to 128.
-	const size_t LINE_MAX = 128;
-	char lineBuf[LINE_MAX];
+	// Set the maximum number of characters to be read at once to 512.
+	char lineBuf[BUFSIZ];
 
 
 	int linesLengthSum = 0, lineCount = 0,
 		longestLineLehgth = 0, longestLineIndex = 0;
 
+	// Read each line.
 	do {
-		inputFile.getline(lineBuf, LINE_MAX);
+		inputFile.getline(lineBuf, BUFSIZ);
 
 		lineCount++;
 		int currentLineLength = my_len(lineBuf);

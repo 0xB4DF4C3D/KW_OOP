@@ -1,12 +1,13 @@
 #include "MusicListManipulator.h"
 
 #include <iomanip>
+#include <functional>
 
 #include "myString.h"
 
 using namespace std;
 
-// This function is only used in MusicListManipulator this file, and it opens the file safely.
+// Open the file safely.
 void validFileOpen(fstream& stream, const char* fileName, int mode = 3) {
 	stream.open(fileName, mode);
 
@@ -31,28 +32,6 @@ MusicListManipulator::~MusicListManipulator() {
 	delete[] mMusicList;
 }
 
-
-void MusicListManipulator::updateMusic(int originRank, int newRank, char* title, char* singer, unsigned int releaseYear) {
-
-	int originIdx = 0;
-
-	// Look for Music with the rank corresponding to originRank.
-	for (unsigned int idx = 0; idx < mEntryCount; idx++) {
-		if (mMusicList[idx].getRank() == originRank) {
-			originIdx = idx;
-			break;
-		}
-	}
-
-	// Update the information of found music.
-	mMusicList[originIdx].setRank(newRank);
-	mMusicList[originIdx].setTitle(title);
-	mMusicList[originIdx].setSinger(singer);
-	mMusicList[originIdx].setReleaseYear(releaseYear);
-
-	updateFile(); // Update the file too.
-}
-
 void MusicListManipulator::updateFile() {
 	// Note that this process creates and deletes, no overwrites and appends.
 	validFileOpen(mFile, mFileName, ios::out | ios::trunc);
@@ -74,19 +53,6 @@ void MusicListManipulator::updateFile() {
 		<< mMusicList[idx].getReleaseYear(); // This is to ignore the last empty line.
 
 	mFile.close();
-}
-
-
-
-void MusicListManipulator::insertMusic(int rank, char* song, char* singerName, unsigned int year) {
-	// Adds a new Music to the end of the file and reloads it to update both the MusicList and the file.
-	
-	validFileOpen(mFile, mFileName, ios::app);
-
-	mFile << '\n' << rank << '/' << song << '/' << singerName << '/' << year;
-	mFile.close();
-
-	loadMusicList();
 }
 
 void MusicListManipulator::loadMusicList() {
@@ -151,57 +117,39 @@ void MusicListManipulator::loadMusicList() {
 	mFile.close();
 }
 
-void MusicListManipulator::sortMusic(int sortType) {
 
-	// Sort MusicList using bubble sort according to given sortType.
-	// This implementation increases the code but reduces the number of branches that need to be handled.
-	switch (sortType) {
-	case RANK:
-		for (int i = 0; i < mEntryCount - 1; i++)
-			for (int j = mEntryCount - 1; j > i; j--)
-				if (mMusicList[j].getRank() > mMusicList[j - 1].getRank())
-					swap(mMusicList[j], mMusicList[j - 1]);
-		break;
 
-	case SONG_NAME:
-		for (int i = 0; i < mEntryCount - 1; i++)
-			for (int j = mEntryCount - 1; j > i; j--)
-				if (my_cmp(mMusicList[j].getTitle(), mMusicList[j - 1].getTitle()) > 0)
-					swap(mMusicList[j], mMusicList[j - 1]);
-		break;
+void MusicListManipulator::insertMusic(int rank, char* song, char* singerName, unsigned int year) {
+	// Adds a new Music to the end of the file and reloads it to update both the MusicList and the file.
+	
+	validFileOpen(mFile, mFileName, ios::app);
 
-	case SINGER_NAME:
-		for (int i = 0; i < mEntryCount - 1; i++)
-			for (int j = mEntryCount - 1; j > i; j--)
-				if (my_cmp(mMusicList[j].getSinger(), mMusicList[j - 1].getSinger()) > 0)
-					swap(mMusicList[j], mMusicList[j - 1]);
-		break;
+	mFile << '\n' << rank << '/' << song << '/' << singerName << '/' << year;
+	mFile.close();
 
-	case RELEASE_YEAR:
-		for (int i = 0; i < mEntryCount - 1; i++)
-			for (int j = mEntryCount - 1; j > i; j--)
-				if (mMusicList[j].getReleaseYear() > mMusicList[j - 1].getReleaseYear())
-					swap(mMusicList[j], mMusicList[j - 1]);
-		break;
-	}
-
-	// Then save it to a file and reload it.
-	updateFile();
 	loadMusicList();
 }
 
-bool MusicListManipulator::checkExistMusic(int rank) {
-	
-	// traverses all musicList and finds the music corresponding to the given rank.
-	for (int idx = 0; idx < mEntryCount; idx++) {
-		if (mMusicList[idx].getRank() == rank)
-			return true; // Return true if found.
+void MusicListManipulator::updateMusic(int originRank, int newRank, char* title, char* singer, unsigned int releaseYear) {
+
+	int originIdx = 0;
+
+	// Look for Music with the rank corresponding to originRank.
+	for (unsigned int idx = 0; idx < mEntryCount; idx++) {
+		if (mMusicList[idx].getRank() == originRank) {
+			originIdx = idx;
+			break;
+		}
 	}
 
-	return false; // If not found, return false.
+	// Update the information of found music.
+	mMusicList[originIdx].setRank(newRank);
+	mMusicList[originIdx].setTitle(title);
+	mMusicList[originIdx].setSinger(singer);
+	mMusicList[originIdx].setReleaseYear(releaseYear);
+
+	updateFile(); // Update the file too.
 }
-
-
 
 void MusicListManipulator::deleteMusic(int rank) {
 	int deletedIdx = 0;
@@ -222,4 +170,55 @@ void MusicListManipulator::deleteMusic(int rank) {
 	// Then save it to a file and reload it.
 	updateFile();
 	loadMusicList();
+}
+
+void MusicListManipulator::sortMusic(Music::PROP sortType) {
+
+	// Sort MusicList using bubble sort according to given sortType.
+
+	// Function wrapper are used to correspond to various sort keys.
+	function<bool(int)> sortCustom;
+
+	// Since the keys actually differ in how they compare, 
+	// this part (such as a string or number) must be defined before sorting.
+
+	// Here I have simplified code by using an anonymous function called lambda, one of the features of C ++ 11.
+	switch (sortType) {
+	case Music::PROP::RANK:
+		sortCustom = [&](int j) {return mMusicList[j].getRank() < mMusicList[j - 1].getRank(); };
+		break;
+
+	case Music::PROP::TITLE:
+		sortCustom = [&](int j) {return my_cmp(mMusicList[j].getTitle(), mMusicList[j - 1].getTitle()) < 0; };
+		break;
+
+	case Music::PROP::SINGER:
+		sortCustom = [&](int j) {return my_cmp(mMusicList[j].getSinger(), mMusicList[j - 1].getSinger()) < 0; };
+		break;
+
+	case Music::PROP::RELEASE_YEAR:
+		sortCustom = [&](int j) {return mMusicList[j].getReleaseYear() > mMusicList[j - 1].getReleaseYear(); };
+		break;
+	}
+
+	// sort with the custom sort method specified above.
+	for (int i = 0; i < mEntryCount - 1; i++)
+		for (int j = mEntryCount - 1; j > i; j--)
+			if (sortCustom(j))
+				swap(mMusicList[j], mMusicList[j - 1]);
+
+	// Then save it to a file and reload it.
+	updateFile();
+	loadMusicList();
+}
+
+bool MusicListManipulator::checkExistMusic(int rank) {
+	
+	// traverses all musicList and finds the music corresponding to the given rank.
+	for (int idx = 0; idx < mEntryCount; idx++) {
+		if (mMusicList[idx].getRank() == rank)
+			return true; // Return true if found.
+	}
+
+	return false; // If not found, return false.
 }

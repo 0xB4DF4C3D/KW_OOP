@@ -34,6 +34,7 @@ bool safeIntInput(T1 &stream, int& i, int min, int max, bool onlyGetOne = true) 
 		stream.clear(); stream.ignore(INT_MAX, '\n'); // Initialize the stream.
 		return EXIT_FAILURE;
 	}
+
 	if (onlyGetOne) { // If the onlyGetOne flag is on
 		char c;
 		while (stream.get(c) && c != '\n') { // Check for additional input after.
@@ -44,6 +45,7 @@ bool safeIntInput(T1 &stream, int& i, int min, int max, bool onlyGetOne = true) 
 			}
 		}
 	}
+
 	return EXIT_SUCCESS;
 }
 

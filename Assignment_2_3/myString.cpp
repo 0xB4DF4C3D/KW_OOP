@@ -81,15 +81,19 @@ int my_cmp(const char* str1, const char* str2) {
 // Verify that the given C style string is only a number.
 bool validateNumeric(const char* numericString) {
 	const char* ptr = numericString;
-	bool pointFlag = false;
+	bool symbolFlag = false;
+
+	if (*ptr == '-') // Pass for minus signed number.
+		ptr++;
+
 	// Check for all characters in a given string using the isdigit function.
 	// And allows points for decimal points.
 	while (*ptr != NULL) {
 		if (*ptr == '.') {
-			if (pointFlag)		// If the decimal point appears twice, 
+			if (symbolFlag)		// If the decimal point appears twice, 
 				return false;	// it returns a decimal conversion failure.
 			else
-				pointFlag = true;
+				symbolFlag = true;
 		} else if (!isdigit(*ptr))	// Or if it is not just a number 
 			return false;			// then it will return a numeric conversion failure.
 		ptr++;

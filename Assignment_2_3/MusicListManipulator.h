@@ -15,15 +15,11 @@ public:
 	void insertMusic(int rank, char* title, char* singer, unsigned int releaseYear);
 	void updateMusic(int originRank, int rank, char* title, char* singer, unsigned int releaseYear);
 	void deleteMusic(int rank);
-	void sortMusic(int sortType);
+	void sortMusic(Music::PROP sortType);
 
 	// Public Rank check function for menu interface.
 	bool checkExistMusic(int rank);
 private:
-
-	enum meType {
-		RANK = 1, SONG_NAME, SINGER_NAME, RELEASE_YEAR
-	};
 
 	Music *mMusicList = nullptr;
 

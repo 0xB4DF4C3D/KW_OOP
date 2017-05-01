@@ -7,10 +7,10 @@
 
 using namespace std;
 
-// This function is only used in MusicListManipulator this file, and it opens the file safely.
+// Open the file safely.
 void validFileOpen(fstream& stream, const char* fileName, int mode = 3) {
 	stream.open(fileName, mode);
-	
+
 	// If it fails to open ...
 	if (stream.fail()) {
 		cerr << "Failed to open " << fileName << '.' << endl;
@@ -32,7 +32,7 @@ StudentManager::StudentManager(const char* fileName) {
 	// If so, the program will be aborted.
 	try {
 		// Gets the number of entries stored in the file.
-		if(safeNumInput(inputFile, numberOfEntry, 0, INT_MAX))
+		if (safeNumInput(inputFile, numberOfEntry, 0, INT_MAX))
 			throw exception("[!] Error. Number of entry must be a positive number.");
 
 		mStudentList = new Student[numberOfEntry];
@@ -43,6 +43,7 @@ StudentManager::StudentManager(const char* fileName) {
 		char lineBuf[BUFSIZ];
 		char *token;
 		mNumberOfStudent = 0; // Verify the actual number of students.
+
 
 		// Each line is searched and the data is read.
 		for (int idx = 0; idx < numberOfEntry; idx++) {
@@ -95,11 +96,20 @@ StudentManager::~StudentManager() {
 
 void StudentManager::printOldestStudent() {
 	int oldestStudentIdx = 0, oldestStudentAge = 0;
+	int oldestStudentIdNum = 0;
 	for (int idx = 0; idx < mNumberOfStudent; idx++) {
 
 		// Find the index of the oldest student.
 		if (oldestStudentAge < mStudentList[idx].getAge()) {
 			oldestStudentAge = mStudentList[idx].getAge();
+			oldestStudentIdNum = mStudentList[idx].getIdNum();
+			oldestStudentIdx = idx;
+
+		} // If they are the same age, compare them with IdNum. 
+		else if (oldestStudentAge == mStudentList[idx].getAge() &&
+			oldestStudentIdNum < mStudentList[idx].getIdNum()) {
+			oldestStudentAge = mStudentList[idx].getAge();
+			oldestStudentIdNum = mStudentList[idx].getIdNum();
 			oldestStudentIdx = idx;
 		}
 	}
@@ -108,6 +118,6 @@ void StudentManager::printOldestStudent() {
 
 void StudentManager::printAll() {
 	for (int idx = 0; idx < mNumberOfStudent; idx++) {
-		cout << idx << ". "; mStudentList[idx].print();
+		cout << idx + 1 << ". "; mStudentList[idx].print();
 	}
 }

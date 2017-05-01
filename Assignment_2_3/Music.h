@@ -11,6 +11,10 @@ public:
 
 	static const int DELETED_ENTRY = -1;
 
+	enum PROP {
+		RANK = 1, TITLE, SINGER, RELEASE_YEAR
+	};
+
 	Music();
 	~Music();
 

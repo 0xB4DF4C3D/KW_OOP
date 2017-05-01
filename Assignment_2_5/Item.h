@@ -5,7 +5,9 @@ public:
 
 	static const size_t NAME_SIZE = 64;
 	static const size_t INFO_SIZE = 256;
-
+	enum PROP {
+		SEQUENCE = 1, NAME, PRICE, QUANTITY
+	};
 	Item();
 	Item(char *name, int price, int quantity);
 	~Item();
@@ -24,7 +26,8 @@ public:
 
 private:
 	char mName[Item::NAME_SIZE];
-	char mInfo[Item::INFO_SIZE];	// The value to be stored in the file.
 	int mPrice, mQuantity;
+
+	char mInfo[Item::INFO_SIZE];	// The value to be stored in the file.
 };
 

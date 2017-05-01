@@ -10,7 +10,7 @@ class OOP {
 
 public:
 
-	enum class SortKeys {
+	enum SortKeys {
 		NAME = 1, SCORE
 	};
 

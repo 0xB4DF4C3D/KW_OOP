@@ -2,7 +2,7 @@
 
 #include <fstream>
 
-#include "ItemList.h"
+#include "Item.h"
 
 class KWmanager {
 
@@ -18,13 +18,14 @@ public:
 	void updateItem(int updateIdx, char *newItemName, int newPrice, int newQuantity);
 	void deleteItem(int deleteIdx);
 
-	void printItem();
+	void printItem(Item::PROP sortType);
 	void saveItem();
 
 	bool checkExistItem(int checkedIdx); // Check wheter the given idx is valid range.
 
 private:
-	ItemList mItemList;
+	int mUsed;
+	Item mItems[MAX_ENTRY];
 
 	std::fstream mInputFile;
 	char mFileName[BUFSIZ];
