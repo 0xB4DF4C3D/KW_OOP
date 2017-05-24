@@ -1,0 +1,10 @@
+Candy/3/5
+Bread/5/4
+Water/1/10
+Computer/200/3
+Cake/10/5
+Orange/4/15
+RAM/60/21
+Hot dog/8/8
+달고나/4/20
+HDMI 케이블/23/1
