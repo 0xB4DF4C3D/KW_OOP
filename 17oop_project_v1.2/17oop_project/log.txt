@@ -1,0 +1,90 @@
+[LOAD]
+success
+
+[ADD]
+success
+
+[ADD]
+success
+
+[ADD]
+success
+
+[ADD]
+success
+
+[ADD]
+success
+
+[ADD]
+success
+
+[ADD]
+success
+
+[ADD]
+success
+
+[ADD]
+success
+
+[ADD]
+success
+
+[SEARCH]
+usb_16g electronics 5 20000
+usb_8g electronics 5 10000
+
+[MODIFY]
+success
+
+[ADD]
+success
+
+[SEARCH]
+usb_16g electronics 8 18000
+usb_8g electronics 5 10000
+
+[PRINT]
+<toiletries>
+body_wash 3 8000
+
+
+[DELETE]
+error
+
+[PRINT]
+<cleaning_supplies>
+broom 5 2000
+mop 5 5000
+<electronics>
+earphone 3 15000
+usb_16g 8 18000
+usb_8g 5 10000
+wireless_mouse 5 20000
+<kitchen_supplies>
+frying_pan 3 5000
+ladle 10 2000
+<office_supplies>
+glue 10 1000
+
+[SEARCH]
+glue office_supplies 10 1000
+
+[MANAGE]
+earphone electronics 3 15000
+frying_pan kitchen_supplies 3 5000
+
+[MANAGE]
+earphone electronics 8 15000
+frying_pan kitchen_supplies 8 5000
+
+[SALES]
+error
+
+[SALES]
+No Result
+
+[SAVE]
+success
+
