@@ -2,11 +2,19 @@
 
 #include <cstring>
 
-
 Follower::Follower() {
+	mCount = 1;
+
+	// Initialize with nullptr to reduce the number of branches when deleting a Node.
+	mNext = nullptr;
 	mWord = nullptr;
+}
+
+Follower::Follower(const char* word) {
 	mCount = 1;
 	mNext = nullptr;
+	mWord = nullptr;
+	setWord(word);
 }
 
 Follower::~Follower() {
@@ -19,7 +27,7 @@ char* Follower::getWord() const {
 
 void Follower::setWord(const char* word) {
 	int wordLength = strlen(word);
-	delete[] mWord;
+	delete[] mWord; // This statement is always safe.
 	mWord = new char[wordLength + 1];
 	strcpy(mWord, word);
 }

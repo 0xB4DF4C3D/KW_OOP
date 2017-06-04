@@ -2,6 +2,8 @@
 class Follower {
 public:
 	Follower();
+	Follower(const char* word);
+
 	~Follower();
 
 	char* getWord() const;
@@ -15,7 +17,7 @@ public:
 
 private:
 	char* mWord;
-	int mCount;
+	int mCount; // Follower has Count instead of Size, unlike Item.
 	Follower* mNext;
 
 };

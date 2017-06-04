@@ -11,20 +11,17 @@ class AddressInfoMenu {
 		MENU_MAX
 	};
 
-	enum class Entity {
-		PERSON, HOUSE
-	};
-
 	static const char* MenuTitle[MENU_MAX - 1];
 
 public:
-	AddressInfoMenu(const char* fileName);
+	AddressInfoMenu(const std::string& fileName);
 	~AddressInfoMenu();
 
 	void printChoice();
 	int input();
 
 private:
-	void menu_show(Entity showedEntity);
+	void menu_show(Entity::PROP showedEntity);
+	void menu_change(Entity::PROP changedEntity);
 };
 

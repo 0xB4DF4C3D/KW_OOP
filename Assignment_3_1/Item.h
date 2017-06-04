@@ -18,7 +18,7 @@ public:
 
 private:
 	char* mWord;
-	int mSize;
+	int mSize; // Unlike Follower, Item has size instead of Count.
 	Follower* mHead;
 
 };

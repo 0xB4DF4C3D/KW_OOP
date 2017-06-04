@@ -11,7 +11,8 @@ int main() {
 	cout << "********************************************" << endl;
 	cout << "S T A R T" << endl;
 	cout << "********************************************" << endl << endl;
-	// print out menu list and recieve menu number to process.
+	
+	// Print out menu list and recieve menu number to process.
 	int input;
 	do {
 		menu_root.printChoice();

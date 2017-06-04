@@ -6,6 +6,7 @@
 
 using namespace std;
 
+// The only menu names that menu classes refer to.
 const char* MobilePhoneMenu::mMenuTitles[] = {
 	"Insert product at begginning",
 	"Insert product at last",
@@ -19,13 +20,6 @@ const char* MobilePhoneMenu::mMenuTitles[] = {
 	"Exit"
 };
 
-MobilePhoneMenu::MobilePhoneMenu() {
-
-}
-
-
-MobilePhoneMenu::~MobilePhoneMenu() {
-}
 
 void MobilePhoneMenu::printChoice() {
 	for (int idx = 0; idx < MENU_MAX - 1; idx++)
@@ -134,7 +128,15 @@ void MobilePhoneMenu::menu_delete() {
 	do {
 		do { // Repeat until the correct value is entered in name.
 			cout << "-> Enter the product name you want to delete : ";
-		} while (safeCstrInput(cin, name, 1, MobilePhoneEntry::NAME_SIZE));
+		} while (safeCstrInput(cin, name, 0, MobilePhoneEntry::NAME_SIZE));
+
+		// If an empty value is entered, stop it.
+		if (strlen(name) == 0) {
+			cout << "Delete canceled." << endl << endl;
+			return;
+		}
+
+		// If the entered name does not exist, enter it again.
 		deletedIdx = mMobilePhoneManager.searchEntry(name);
 		if (deletedIdx == -1)
 			cout << "There are no " << name << endl;
@@ -184,25 +186,29 @@ void MobilePhoneMenu::menu_search() {
 	cout << "<Search product>" << endl;
 
 	char name[MobilePhoneEntry::NAME_SIZE];
+	while(true) {
+		do { // Repeat until the correct value is entered in name.
+			cout << "-> Enter the product name : ";
+		} while (safeCstrInput(cin, name, 0, MobilePhoneEntry::NAME_SIZE));
+		
+		// If an empty value is entered, stop it.
+		if (strlen(name) == 0) {
+			cout << "Update canceled." << endl << endl;
+			break;
+		}
 
-	do { // Repeat until the correct value is entered in name.
-		cout << "-> Enter the product name : ";
-	} while (safeCstrInput(cin, name, 1, MobilePhoneEntry::NAME_SIZE));
-
-	int searchedIdx;
-
-	searchedIdx = mMobilePhoneManager.searchEntry(name);
-
-	if (searchedIdx == -1)
-		cout << "There are no " << name << endl;
-	else {
-		MobilePhoneEntry* searchedMobilePhoneEntry = mMobilePhoneManager.at(searchedIdx);
-		cout << "* At position " << searchedIdx << " *" << endl;
-		cout << "Product name  : " << searchedMobilePhoneEntry->getName() << endl;
-		cout << "Product brand : " << searchedMobilePhoneEntry->getBrand() << endl;
-		cout << "Product price : " << searchedMobilePhoneEntry->getPrice() << endl;
+		int searchedIdx = mMobilePhoneManager.searchEntry(name);
+		if (searchedIdx == -1)
+			cout << "There are no " << name << endl;
+		else {
+			MobilePhoneEntry* searchedMobilePhoneEntry = mMobilePhoneManager.at(searchedIdx);
+			cout << "* At position " << searchedIdx << " *" << endl;
+			cout << "Product name  : " << searchedMobilePhoneEntry->getName() << endl;
+			cout << "Product brand : " << searchedMobilePhoneEntry->getBrand() << endl;
+			cout << "Product price : " << searchedMobilePhoneEntry->getPrice() << endl;
+			break;
+		}
 	}
-
 	cout << "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-" << endl << endl;
 }
 

@@ -2,11 +2,12 @@
 
 #include <cstring>
 
-
 Item::Item() {
-	mWord = nullptr;
 	mSize = 0;
+
+	// Initialize with nullptr to reduce the number of branches when deleting a Node.
 	mHead = nullptr;
+	mWord = nullptr;
 }
 
 
@@ -20,7 +21,7 @@ char* Item::getWord() const {
 
 void Item::setWord(const char* word) {
 	int wordLength = strlen(word);
-	delete[] mWord;
+	delete[] mWord; // This statement is always safe.
 	mWord = new char[wordLength + 1];
 	strcpy(mWord, word);
 }

@@ -14,7 +14,7 @@ const char* AddressInfoMenu::MenuTitle[] = {
 	"Quit"
 };
 
-AddressInfoMenu::AddressInfoMenu(const char* fileName):mManager(fileName) {
+AddressInfoMenu::AddressInfoMenu(const std::string& fileName) :mManager(fileName) {
 
 }
 
@@ -38,15 +38,19 @@ int AddressInfoMenu::input() {
 
 	try {
 		switch (menuNumber) {
-		case AddressInfoMenu::SHOW_PEOPLE:
+		case SHOW_PEOPLE:
+			menu_show(Entity::PROP::PEOPLE);
 			break;
-		case AddressInfoMenu::SHOW_HOUSE:
+		case SHOW_HOUSE:
+			menu_show(Entity::PROP::HOUSE);
 			break;
-		case AddressInfoMenu::CHANGE_NAME:
+		case CHANGE_NAME:
+			menu_change(Entity::PROP::NAME);
 			break;
-		case AddressInfoMenu::CHANGE_ADDRESS:
+		case CHANGE_ADDRESS:
+			menu_change(Entity::PROP::ADDRESS);
 			break;
-		case AddressInfoMenu::QUIT:
+		case QUIT:
 			return 0;
 			break;
 		default:
@@ -60,13 +64,38 @@ int AddressInfoMenu::input() {
 	return menuNumber;
 }
 
-void AddressInfoMenu::menu_show(Entity showedEntity) {
+void AddressInfoMenu::menu_show(Entity::PROP showedEntity) {
 	switch (showedEntity) {
-	case AddressInfoMenu::Entity::PERSON:
-
+	case Entity::PROP::PEOPLE:
+		mManager.showPeople();
 		break;
-	case AddressInfoMenu::Entity::HOUSE:
+	case Entity::PROP::HOUSE:
+		mManager.showHouse();
+		break;
+	default:
+		throw logic_error("[!] Error. in menu_show::input() There is no corresponding case in the switch statement.");
+		break;
+	}
+}
 
+void AddressInfoMenu::menu_change(Entity::PROP changedEntity) {
+
+	string oldProperty, newProperty;
+
+	cout << "From: ";
+	getline(cin, oldProperty);
+	cout << "To: ";
+	getline(cin, newProperty);
+
+	switch (changedEntity) {
+	case Entity::PROP::NAME:
+		mManager.changeName(oldProperty, newProperty);
+		break;
+	case Entity::PROP::ADDRESS:
+		mManager.changeAddress(oldProperty, newProperty);
+		break;
+	default:
+		throw logic_error("[!] Error. in menu_change::input() There is no corresponding case in the switch statement.");
 		break;
 	}
 }

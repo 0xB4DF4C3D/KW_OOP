@@ -2,33 +2,53 @@
 
 #include <list>
 
+class Entity {
+
+public:
+
+	Entity() {}
+	~Entity() {}
+
+	enum class PROP {
+		PEOPLE, HOUSE, NAME, ADDRESS
+	};
+};
+
 class House;
 
-class Person {
+class People : public Entity {
 public:
 
 	static const size_t NAME_SIZE = BUFSIZ;
 
-	Person(House* house) { mHouse = house; };
-	~Person() {};
+	People() {}
+	People(const std::string& name) { mName = name; }
+	~People() {}
+
+	House* getHouse() const { return mHouse; }
+	void setHouse(House* house) { mHouse = house; }
+	std::string getName() const { return mName; }
+	void setName(const std::string& name) { mName = name; }
+
 private:
+	std::string mName;
 	House* mHouse;
 };
 
-class House {
+class House : public Entity {
 public:
 
 	static const size_t ADDRESS_SIZE = BUFSIZ;
 
-	House(std::string address) { mAddress = address; }
+	House() {}
 	~House() {};
 
+	void addPeople(People* people) { mPeopleList.push_back(people); }
+	std::list<People*> getPeopleList() const { return mPeopleList; }
 	std::string getAddress() const { return mAddress; }
 	void setAddress(const std::string& address) { mAddress = address; }
-	void addPerson(Person* person) { mPersonList.push_back(person); }
-	std::list<Person*> getPersonList() const { return mPersonList; }
 
 private:
-	std::list<Person*> mPersonList;
 	std::string mAddress;
+	std::list<People*> mPeopleList;
 };
