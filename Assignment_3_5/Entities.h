@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <memory>
 
 class Entity {
 
@@ -14,21 +15,19 @@ public:
 	};
 };
 
-class House;
+class House; // Forward declaration.
 
 class People : public Entity {
 public:
-
-	static const size_t NAME_SIZE = BUFSIZ;
 
 	People() {}
 	People(const std::string& name) { mName = name; }
 	~People() {}
 
 	House* getHouse() const { return mHouse; }
-	void setHouse(House* house) { mHouse = house; }
 	std::string getName() const { return mName; }
 	void setName(const std::string& name) { mName = name; }
+	void setHouse(House* house) { mHouse = house; }
 
 private:
 	std::string mName;
@@ -38,17 +37,15 @@ private:
 class House : public Entity {
 public:
 
-	static const size_t ADDRESS_SIZE = BUFSIZ;
-
 	House() {}
 	~House() {};
 
-	void addPeople(People* people) { mPeopleList.push_back(people); }
-	std::list<People*> getPeopleList() const { return mPeopleList; }
+	void addPeople(std::shared_ptr<People> people) { mPeopleList.push_back(people); }
 	std::string getAddress() const { return mAddress; }
+	std::list<std::shared_ptr<People>> getPeopleList() const { return mPeopleList; }
 	void setAddress(const std::string& address) { mAddress = address; }
 
 private:
 	std::string mAddress;
-	std::list<People*> mPeopleList;
+	std::list<std::shared_ptr<People>> mPeopleList;
 };

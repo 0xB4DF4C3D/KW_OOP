@@ -10,7 +10,6 @@ class AddressInfoManager {
 public:
 
 	AddressInfoManager(const std::string& fileName);
-	~AddressInfoManager();
 
 	void showPeople() const;
 	void showHouse() const;

@@ -7,7 +7,9 @@
 
 using namespace std;
 
+// Returns a tokenized string.
 vector<string> tokenize(const string& str, const string& delimiters = " ");
+
 
 AddressInfoManager::AddressInfoManager(const std::string& fileName) {
 
@@ -25,19 +27,15 @@ AddressInfoManager::AddressInfoManager(const std::string& fileName) {
 		name = tokens[0];
 		address = tokens[1];
 
-		People* newPeople = new People(name);
+		// Add new people to HouseMap and PeopleMap.
+		shared_ptr<People> newPeople = make_shared<People>(name);
 		mHouseMap[address].addPeople(newPeople);
 		mHouseMap[address].setAddress(address);
 		newPeople->setHouse(&mHouseMap[address]);
-
 		mPeopleMap[name].setHouse(&mHouseMap[address]);
 		mPeopleMap[name].setName(name);
 	}
 	cout << endl;
-}
-
-
-AddressInfoManager::~AddressInfoManager() {
 }
 
 void AddressInfoManager::showPeople() const {
@@ -70,11 +68,12 @@ void AddressInfoManager::changeName(std::string oldName, std::string newName) {
 		throw invalid_argument("oldName is invalid argument");
 	}
 
+	// Move the key with the old address to the new address.
 	mPeopleMap[newName] = mPeopleMap[oldName];
 	mPeopleMap.erase(oldName);
-
 	mPeopleMap[newName].setName(newName);
 
+	// Update the map that covers people.
 	for (const auto& people : mPeopleMap[newName].getHouse()->getPeopleList()) {
 		if (people->getName() == oldName) {
 			people->setName(newName);
@@ -90,9 +89,11 @@ void AddressInfoManager::changeAddress(std::string oldAddress, std::string newAd
 		throw invalid_argument("oldAddress is invalid argument");
 	}
 
+	// Move the key with the old address to the new address.
 	mHouseMap[newAddress] = mHouseMap[oldAddress];
 	mHouseMap[newAddress].setAddress(newAddress);
 
+	// Update the map that covers people.
 	for (const auto& people : mHouseMap[oldAddress].getPeopleList()) {
 		people->setHouse(&mHouseMap[newAddress]);
 		mPeopleMap[people->getName()].setHouse(&mHouseMap[newAddress]);

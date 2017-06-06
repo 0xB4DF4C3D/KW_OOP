@@ -5,6 +5,16 @@ ItemList::ItemList(ofstream* fout) {
 	iRoot = NULL;
 }
 
+ItemList::~ItemList() {
+	Node* deletedNode = iRoot, *nextNode;
+
+	while (deletedNode != NULL) {
+		nextNode = deletedNode->getNext();
+		delete deletedNode;
+		deletedNode = nextNode;
+	}
+}
+
 ItemNode * ItemList::getLast() const {
 	Node* lastNode;
 	for (lastNode = iRoot; lastNode->getNext() != NULL; lastNode = lastNode->getNext());
@@ -12,34 +22,32 @@ ItemNode * ItemList::getLast() const {
 }
 
 ItemNode* ItemList::getNode(string name, ItemNode** prevNode) const {
-	ItemNode* targetNode = static_cast<ItemNode*>(iRoot);
-
-
 	if (prevNode != NULL)
 		*prevNode = static_cast<ItemNode*>(iRoot);
 
+	Node* targetNode = iRoot;
 	if (targetNode == NULL) {
 		return NULL;
 	}
 
 	while (targetNode != NULL) {
 		if (targetNode->isMe(name))
-			return targetNode;
+			return static_cast<ItemNode*>(targetNode);
 		if (prevNode != NULL)
-			*prevNode = targetNode;
-		targetNode = static_cast<ItemNode*>(targetNode->getNext());
+			*prevNode = static_cast<ItemNode*>(targetNode);
+		targetNode = targetNode->getNext();
 	}
 
 	return NULL;
 }
 
 vector<ItemNode*> ItemList::getVector() {
-	ItemNode* currentNode = static_cast<ItemNode*>(iRoot);
+	Node* currentNode = iRoot;
 	vector<ItemNode*> resultVector;
 
 	while (currentNode != NULL) {
-		resultVector.push_back(currentNode);
-		currentNode = static_cast<ItemNode*>(currentNode->getNext());
+		resultVector.push_back(static_cast<ItemNode*>(currentNode));
+		currentNode = currentNode->getNext();
 	}
 
 	return resultVector;
@@ -47,32 +55,28 @@ vector<ItemNode*> ItemList::getVector() {
 
 Node* ItemList::deleteNode(string name) {
 	ItemNode* targetPrevNode;
-	Node* targetAboveNode;
-	ItemNode* targetNode = getNode(name, &targetPrevNode);
+	Node* targetNode = getNode(name, &targetPrevNode);
 
-	if (targetNode == NULL)
+	// Processing in Category List.
+	if (targetNode == NULL) {						// If there is no item corresponding to name.
 		return NULL;
-
-	else if (targetNode->getDown() == NULL) {
+	} else if (targetNode->getDown() == NULL) {		// If node to be deleted is lowest node.
 		targetNode->getUp()->setDown(NULL);
-	}
-	else if (targetNode->getUp() == NULL) {
-		targetNode->getDown()->setUp(NULL);
-		iRoot = targetNode->getDown();
-	}
-	else {
-		ItemNode* downNode = static_cast<ItemNode*>(targetNode->getDown());
-		ItemNode* upNode = static_cast<ItemNode*>(targetNode->getUp());
+	} else {											// Node to be deleted is located in middle.
+		Node* downNode = targetNode->getDown();
+		Node* upNode = targetNode->getUp();
 
 		upNode->setDown(downNode);
 		downNode->setUp(upNode);
 	}
 
+	// Processing in Item List.
 	if (targetPrevNode != targetNode)
 		targetPrevNode->setNext(targetNode->getNext());
 	else
 		iRoot = targetNode->getNext();
 
+	Node* targetAboveNode;
 	targetAboveNode = targetNode->getUp();
 
 	delete targetNode;
@@ -81,20 +85,20 @@ Node* ItemList::deleteNode(string name) {
 	return targetAboveNode;
 }
 
-void ItemList::push_back(ItemNode * newNode) {
-	if (iRoot == NULL || strcmp(static_cast<ItemNode*>(iRoot)->getName(), newNode->getName()) >= 0) {
+void ItemList::addItem(ItemNode * newNode) {
+
+	// If it is first item to be inserted or name precedes first item.
+	if (iRoot == NULL || strcmp(iRoot->getName(), newNode->getName()) < 0) {
 		newNode->setNext(iRoot);
 		iRoot = newNode;
-	}
-	else {
-		ItemNode* currentNode = static_cast<ItemNode*>(iRoot);
+	} else {
 
-		while (currentNode->getNext() != NULL &&
-			strcmp(static_cast<ItemNode*>(currentNode->getNext())->getName(), newNode->getName()) < 0) {
+		// Find node immediately before item name.
+		Node* currentNode = iRoot;
+		while (currentNode->getNext() != NULL && strcmp(currentNode->getNext()->getName(), newNode->getName()) < 0)
+			currentNode = currentNode->getNext();
 
-			currentNode = static_cast<ItemNode*>(currentNode->getNext());
-		}
-
+		// Inserting by re-linking back node.
 		newNode->setNext(currentNode->getNext());
 		currentNode->setNext(newNode);
 	}

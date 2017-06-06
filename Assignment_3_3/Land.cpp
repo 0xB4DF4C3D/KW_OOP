@@ -39,7 +39,7 @@ void Land::setLandFromConsole() {
 	for (int y = 0; y < mHeight; y++) {
 		for (int x = 0; x < mWidth; x++) {
 			if (safeNumInput(cin, status, START + 1, END - 1, false)) {
-				cout << "Status code must be in " << START + 1 << " ~ " << END - 1 << endl;
+				cerr << "Status code must be in " << START + 1 << " ~ " << END - 1 << endl;
 				throw logic_error("[!] Error. Invalid status code.");
 			} else {
 				mBoard[y][x] = static_cast<Status>(status);

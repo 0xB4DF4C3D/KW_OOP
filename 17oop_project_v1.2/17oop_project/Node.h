@@ -2,6 +2,7 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
+#include <assert.h>
 #include <iostream>
 #include <fstream>
 #include <cstring>
@@ -28,13 +29,11 @@ public:
 	Node* getNext() { return pNext; }	
 	Node* getUp()	{ return pUp; }
 	Node* getDown() { return pDown; }
-	virtual string getType() const = 0;
+	virtual const char* getName() const = 0;
+
+	virtual bool isMe(string name) const = 0;
 
 	void setNext(Node* pN)	{ pNext = pN; }
 	void setUp(Node* pN)	{ pUp = pN; }
 	void setDown(Node* pN)	{ pDown = pN; }
-
-
-
-	/* write your code for polymorphism */
 };

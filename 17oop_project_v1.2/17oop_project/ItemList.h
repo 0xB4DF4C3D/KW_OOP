@@ -10,14 +10,18 @@ private:
 
 public:
 	ItemList(ofstream* fout);
-
-
-	ItemNode* getLast() const;
-	ItemNode* getNode(string name, ItemNode** prevNode = NULL) const;
-	Node* getRoot() const { return iRoot; }
-	vector<ItemNode*> getVector();
-
+	~ItemList();
 	Node* deleteNode(string name);
 
-	void push_back(ItemNode* newNode);
+	ItemNode* getLast() const;
+	Node* getRoot() const { return iRoot; }
+
+	// Get item whose name match. and 
+	// if want, get previous node too.
+	ItemNode* getNode(string name, ItemNode** prevNode = NULL) const;
+
+	// Return current list elements as vector.
+	vector<ItemNode*> getVector();
+
+	void addItem(ItemNode* newNode);
 };

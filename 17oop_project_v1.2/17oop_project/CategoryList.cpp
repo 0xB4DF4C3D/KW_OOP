@@ -2,20 +2,31 @@
 
 #include "ItemNode.h"
 
-CategoryNode * CategoryList::getNode(string name, CategoryNode** prevNode) const {
-	CategoryNode* targetNode = static_cast<CategoryNode*>(cRoot);
+CategoryList::CategoryList(ofstream* fout) {
+	this->fout = fout;
+	cRoot = NULL;
+}
 
-	if (prevNode != NULL)
-		*prevNode = static_cast<CategoryNode*>(cRoot);
-	if (targetNode == NULL)
-		return NULL;
+CategoryList::~CategoryList() {
+	Node* deletedNode = cRoot, *nextNode;
+
+	while (deletedNode != NULL) {
+		nextNode = deletedNode->getNext();
+		delete deletedNode;
+		deletedNode = nextNode;
+	}
+
+}
+
+CategoryNode * CategoryList::getNode(string name, CategoryNode** prevNode) const {
+	Node* targetNode = cRoot;
 
 	while (targetNode != NULL) {
 		if (targetNode->isMe(name))
-			return targetNode;
+			return static_cast<CategoryNode*>(targetNode);
 		if (prevNode != NULL)
-			*prevNode = targetNode;
-		targetNode = static_cast<CategoryNode*>(targetNode->getNext());
+			*prevNode = static_cast<CategoryNode*>(targetNode);
+		targetNode = targetNode->getNext();
 	}
 
 	return NULL;
@@ -23,13 +34,18 @@ CategoryNode * CategoryList::getNode(string name, CategoryNode** prevNode) const
 
 bool CategoryList::deleteNode(string name) {
 
-	CategoryNode* targetNode, *targetPrevNode;
-	targetNode =  getNode(name, &targetPrevNode);
+	CategoryNode* targetNode, *targetPrevNode = NULL;
+
+	targetNode = getNode(name, &targetPrevNode);
 	if (targetNode == NULL)
 		return false;
-	targetPrevNode->setNext(targetNode->getNext());
-	delete targetNode;
 
+	if (targetPrevNode == NULL)
+		cRoot = targetNode->getNext();
+	else
+		targetPrevNode->setNext(targetNode->getNext());
+
+	delete targetNode;
 	return true;
 }
 
@@ -39,49 +55,45 @@ CategoryNode * CategoryList::getLast() const {
 	return static_cast<CategoryNode*>(lastNode);
 }
 
-CategoryList::CategoryList(ofstream* fout) {
-	this->fout = fout;
-	cRoot = NULL;
-}
+void CategoryList::addCategory(CategoryNode* newNode) {
 
-void CategoryList::push_back(CategoryNode* newNode) {
-
-	if (cRoot == NULL || strcmp(static_cast<CategoryNode*>(cRoot)->getName(), newNode->getName()) >= 0) {
+	// If it is first category to be inserted or name precedes first category.
+	if (cRoot == NULL || strcmp(cRoot->getName(), newNode->getName()) >= 0) {
 		newNode->setNext(cRoot);
 		cRoot = newNode;
-	}
-	else {
-		CategoryNode* currentNode = static_cast<CategoryNode*>(cRoot);
+	} else {
 
-		while (currentNode->getNext() != NULL &&
-			strcmp(static_cast<CategoryNode*>(currentNode->getNext())->getName(), newNode->getName()) < 0) {
+		// Find node immediately before category name.
+		Node* currentNode = cRoot;
+		while (currentNode->getNext() != NULL && strcmp(currentNode->getNext()->getName(), newNode->getName()) < 0)
+			currentNode = currentNode->getNext();
 
-			currentNode = static_cast<CategoryNode*>(currentNode->getNext());
-		}
-
+		// Inserting by re-linking  front and back nodes.
 		newNode->setNext(currentNode->getNext());
 		currentNode->setNext(newNode);
 	}
 }
 
-void CategoryList::push_item(CategoryNode* category, Node* newNode) {
+void CategoryList::addItem(CategoryNode* category, Node* newNode) {
 
-	if (category->getDown() == NULL || strcmp(category->getName(), static_cast<ItemNode*>(newNode)->getName()) >= 0) {
+	// If it is first item to be inserted or name precedes first item.
+	if (category->getDown() == NULL || strcmp(category->getDown()->getName(), newNode->getName()) >= 0) {
 		newNode->setDown(category->getDown());
 		newNode->setUp(category);
 		if (category->getDown() != NULL)
 			category->getDown()->setUp(newNode);
 		category->setDown(newNode);
-	}
-	else {
-		CategoryNode* currentNode = category;
+	} else {
 
+		// Find node immediately before item name.
+		Node* currentNode = category;
 		while (currentNode->getDown() != NULL &&
-			strcmp(static_cast<CategoryNode*>(currentNode->getDown())->getName(), static_cast<ItemNode*>(newNode)->getName()) < 0) {
-
-			currentNode = static_cast<CategoryNode*>(currentNode->getDown());
+			strcmp(currentNode->getDown()->getName(), newNode->getName()) 
+			) {
+			currentNode = currentNode->getDown();
 		}
 
+		// Inserting by re-linking front and back nodes.
 		newNode->setDown(currentNode->getDown());
 		newNode->setUp(currentNode);
 		if (currentNode->getDown() != NULL)
@@ -91,12 +103,12 @@ void CategoryList::push_item(CategoryNode* category, Node* newNode) {
 }
 
 bool CategoryList::isIn(CategoryNode * category, string name) {
-	ItemNode* currentItem = static_cast<ItemNode*>(category->getDown());
+	Node* currentItem = category->getDown();
 
 	while (currentItem->getDown() != NULL) {
 		if (currentItem->isMe(name))
 			return true;
-		currentItem = static_cast<ItemNode*>(currentItem->getDown());
+		currentItem = currentItem->getDown();
 	}
 
 	return false;

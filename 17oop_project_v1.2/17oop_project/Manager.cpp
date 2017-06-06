@@ -13,7 +13,8 @@ Manager::Manager() {
 }
 
 Manager::~Manager() {
-	/* write your code */
+	delete cList;
+	delete iList;
 }
 
 void Manager::run(const char* fileName) {
@@ -59,8 +60,6 @@ void Manager::run(const char* fileName) {
 			isWork = SAVE(); hasResult = false;
 		} else { isWork = false; }
 
-
-
 		if (isWork == false) {
 			cout << "error" << endl << endl;
 			fout << "error" << endl << endl;
@@ -76,13 +75,13 @@ void Manager::run(const char* fileName) {
 }
 
 bool Manager::LOAD() {
-	string lineBuf;
 	char cLineBuf[128];
+	string lineBuf;
 	vector<string> tokens;
 
 	ifstream itemFile("item.txt");
 
-	if (!itemFile.is_open())
+	if (!itemFile.is_open()) // If file can not be opened, simply skip it.
 		return true;
 
 	while (!itemFile.eof()) {
@@ -90,49 +89,56 @@ bool Manager::LOAD() {
 		strcpy(cLineBuf, lineBuf.c_str());
 		ADD(cLineBuf);
 	}
-	itemFile.close();
 
+	itemFile.close();
 	return true;
 }
 
 bool Manager::ADD(char* arg) {
-	string s_arg(arg);
 	vector<string> tokens;
-	tokenize(s_arg, tokens, " ");
+	tokenize(string(arg), tokens, " ");
 
-	if (tokens.size() == 2) {
-		ItemNode* currentItem = static_cast<ItemNode*>(iList->getNode(tokens[0]));
+	if (tokens.size() == 2) { // If two arguments, add to existing item.
+
+		ItemNode* currentItem = iList->getNode(tokens[0]);
 		int count = atoi(tokens[1].c_str());
-
-		if (currentItem == NULL || count < 1)
+		if (currentItem == NULL || count < 1) // // If item or number to added is not appropriate.
 			return false;
 
 		currentItem->addCount(count);
-	} else if (tokens.size() == 4) {
+
+	} else if (tokens.size() == 4) { // If four arguments, add new item.
+
+		const char* itemName = tokens[0].c_str();
+		const char* categoryName = tokens[1].c_str();
+
+		// Check that price and number are appropriate.
+		int count = atoi(tokens[2].c_str());
+		int price = atoi(tokens[3].c_str());
+		if (count < 1 || price < 1)
+			return false;
+
+		// First, check whether there is category to which item to be added belongs.
 		CategoryNode* currentCategory = cList->getNode(tokens[1]);
 		if (currentCategory == NULL) {
-			CategoryNode* newCategoryNode = new CategoryNode(tokens[1].c_str());
-			cList->push_back(newCategoryNode);
 
-			int count = atoi(tokens[2].c_str());
-			int price = atoi(tokens[3].c_str());
-
-			if (count < 1 || price < 1)
-				return false;
-
-			ItemNode* newItemNode = new ItemNode(tokens[0].c_str(), count, price);
-			cList->push_item(newCategoryNode, newItemNode);
-			iList->push_back(newItemNode);
-
+			// If not, create new one and 
+			CategoryNode* newCategoryNode = new CategoryNode(categoryName);
+			cList->addCategory(newCategoryNode);
+			// add item to it.
+			ItemNode* newItemNode = new ItemNode(itemName, count, price);
+			cList->addItem(newCategoryNode, newItemNode);
+			iList->addItem(newItemNode);
 		} else {
 
+			// If Item to added is already there.
 			if (cList->isIn(currentCategory, tokens[0]))
 				return false;
 
-			ItemNode* newItemNode = new ItemNode(tokens[0].c_str(), atoi(tokens[2].c_str()), atoi(tokens[3].c_str()));
-
-			cList->push_item(currentCategory, newItemNode);
-			iList->push_back(newItemNode);
+			// Add item to it.
+			ItemNode* newItemNode = new ItemNode(itemName, count, price);
+			cList->addItem(currentCategory, newItemNode);
+			iList->addItem(newItemNode);
 		}
 
 	}
@@ -140,36 +146,37 @@ bool Manager::ADD(char* arg) {
 }
 
 bool Manager::MODIFY(char* arg) {
-	string s_arg(arg);
 	vector<string> tokens;
-	tokenize(s_arg, tokens, " ");
+	tokenize(string(arg), tokens, " ");
 
 	ItemNode* targetNode = iList->getNode(tokens[0]);
+	int price = atoi(tokens[1].c_str());
 
-	if (targetNode == NULL)
+	// If name or price is wrong.
+	if (targetNode == NULL || price < 1)
 		return false;
 
-	targetNode->setPrice(atoi(tokens[1].c_str()));
+	targetNode->setPrice(price);
 	return true;
 }
 
 bool Manager::SELL(char* arg) {
-	string s_arg(arg);
 	vector<string> tokens;
-	tokenize(s_arg, tokens, " ");
+	tokenize(string(arg), tokens, " ");
+
 
 	ItemNode* targetNode = iList->getNode(tokens[0]);
-
-	if (targetNode == NULL)
-		return false;
-
 	int sellAmount = atoi(tokens[1].c_str());
 
-	if (sellAmount < 1)
+	// If name or amount is wrong.
+	if (targetNode == NULL || sellAmount < 1)
 		return false;
 
+	// subCount method returns false when quantity of goods is negative, 
+	// without performing any operation.
 	bool isWork = targetNode->subCount(sellAmount);
 
+	// Only records when item is sold successfully.
 	if (isWork) {
 		ofstream sellFile("sell.txt", ios::app);
 		sellFile << targetNode->getName() << " " << sellAmount * targetNode->getPrice() << endl;
@@ -180,64 +187,68 @@ bool Manager::SELL(char* arg) {
 }
 
 bool Manager::DELETE(char* arg) {
-	string s_arg(arg);
 	vector<string> tokens;
-	tokenize(s_arg, tokens, " ");
+	tokenize(string(arg), tokens, " ");
 
+	// deleteNode method returns NULL if deletion fails. Or
+	// if successful. Returns above node of deleted node.
 	Node* deletedAboveNode = iList->deleteNode(tokens[0]);
 
 	if (deletedAboveNode == NULL) {
 		return false;
-	} else if (deletedAboveNode->getType() == "category") {
-		if (cList->deleteNode(static_cast<CategoryNode*>(deletedAboveNode)->getName()))
-			return false;
+
+		// If deleted node was last item in category
+	} else if (deletedAboveNode->getDown() == NULL) {
+
+		// Clear category and return true.
+		if (cList->deleteNode(deletedAboveNode->getName()))
+			return true;
+		else
+			assert(!"[!] Error. Bug in the Manager::DELETE(char* arg)."); // If it is false, there is problem with code.
 	}
 
 	return true;
 }
 
 bool Manager::SEARCH(char* arg) {
-	string s_arg(arg);
 	vector<string> tokens;
-	tokenize(s_arg, tokens, " ");
+	tokenize(string(arg), tokens, " ");
 
-	vector<ItemNode*> searchedNodes;
-
+	// Determine method of SEARCH.
 	function<bool(ItemNode* node, string s)> customComp;
+	if (tokens[0].size() == 1) { // If only one letter is entered
 
-	ItemNode* currentNode = static_cast<ItemNode*>(iList->getRoot());
-
-	if (tokens[0].size() == 1)
+		// True if first letter matches.
 		customComp = [](ItemNode* node, string word)->bool { return node->getName()[0] == word.c_str()[0]; };
-	else
-		customComp = [](ItemNode* hayStackNode, string needle)->bool { return string(hayStackNode->getName()).find(needle) != string::npos; };
+	} else {
 
+		// True if all word contained.
+		customComp = [](ItemNode* hayStackNode, string needle)->bool { return string(hayStackNode->getName()).find(needle) != string::npos; };
+	}
+
+	// Select items that meet condition.
+	ItemNode* currentNode = static_cast<ItemNode*>(iList->getRoot());
+	vector<ItemNode*> searchedNodes;
 	while (currentNode != NULL) {
 		if (customComp(currentNode, tokens[0]))
 			searchedNodes.push_back(currentNode);
 		currentNode = static_cast<ItemNode*>(currentNode->getNext());
 	}
 
+	// If there are no items matching condition
 	if (searchedNodes.size() == 0) {
 		cout << "No Result" << endl << endl;
 		fout << "No Result" << endl << endl;
 		return true;
 	}
 
+	// Sort by name.
 	sort(searchedNodes.begin(), searchedNodes.end(), [](ItemNode* a, ItemNode* b) {return strcmp(a->getName(), b->getName()) < 0; });
 
-	for (const auto& currentNode : searchedNodes) {
-		cout << "    " << currentNode->getName() << " ";
-		cout << static_cast<ItemNode*>(currentNode->getCategory())->getName() << " ";
-		cout << currentNode->getCount() << " ";
-		cout << currentNode->getPrice() << endl;
+	// Output items found.
+	for (const auto& currentNode : searchedNodes)
+		printItem(currentNode);
 
-
-		fout << currentNode->getName() << " ";
-		fout << static_cast<ItemNode*>(currentNode->getCategory())->getName() << " ";
-		fout << currentNode->getCount() << " ";
-		fout << currentNode->getPrice() << endl;
-	}
 	cout << endl;
 	fout << endl;
 
@@ -245,86 +256,67 @@ bool Manager::SEARCH(char* arg) {
 }
 
 bool Manager::PRINT(char* arg) {
-	if (strcmp(arg, "\0") == 0) {
-		CategoryNode* currentCategory = static_cast<CategoryNode*>(cList->getRoot());
+	if (strcmp(arg, "\0") == 0) { // If there is no argument.
+		Node* currentCategory = cList->getRoot();
 
+		// If there are no items yet.
 		if (currentCategory->getDown() == NULL) {
 			cout << "No Result" << endl << endl;
 			fout << "No Result" << endl << endl;
 			return true;
 		}
 
+		// Traverse categories and output items.
 		while (currentCategory != NULL) {
 			cout << "<" << currentCategory->getName() << ">" << endl;
 			fout << "<" << currentCategory->getName() << ">" << endl;
 
 			ItemNode* currentItem = static_cast<ItemNode*>(currentCategory->getDown());
 			while (currentItem != NULL) {
-				cout << "    " << currentItem->getName() << " ";
-				cout << currentItem->getCount() << " ";
-				cout << currentItem->getPrice() << endl;
-
-				fout << currentItem->getName() << " ";
-				fout << currentItem->getCount() << " ";
-				fout << currentItem->getPrice() << endl;
-
+				printItem(currentItem, false);
 				currentItem = static_cast<ItemNode*>(currentItem->getDown());
 			}
-			currentCategory = static_cast<CategoryNode*>(currentCategory->getNext());
+			currentCategory = currentCategory->getNext();
 		}
-
 	} else {
-		string s_arg(arg);
 		vector<string> tokens;
-		tokenize(s_arg, tokens, " ");
+		tokenize(string(arg), tokens, " ");
 
-		CategoryNode* currentCategory = static_cast<CategoryNode*>(cList->getNode(tokens[0]));
+		Node* currentCategory = cList->getNode(tokens[0]);
 
-		if (currentCategory->getDown() == NULL) {
-			cout << "No Result" << endl << endl;
-			fout << "No Result" << endl << endl;
-			return true;
-		}
+		assert((currentCategory->getDown(), "[!] Error. Bug in the Manager::PRINT(char* arg).")); // If it is false, there is problem with code.
 
+		// Traverse that category and output its items.
 		cout << "<" << currentCategory->getName() << ">" << endl;
 		fout << "<" << currentCategory->getName() << ">" << endl;
-
 		ItemNode* currentItem = static_cast<ItemNode*>(currentCategory->getDown());
 		while (currentItem != NULL) {
-			cout << currentItem->getName() << " ";
-			cout << currentItem->getCount() << " ";
-			cout << currentItem->getPrice() << endl << endl;
-
-
-			fout << currentItem->getName() << " ";
-			fout << currentItem->getCount() << " ";
-			fout << currentItem->getPrice() << endl << endl;
-
+			printItem(currentItem, false);
 			currentItem = static_cast<ItemNode*>(currentItem->getDown());
 		}
 	}
+
 	cout << endl;
 	fout << endl;
 	return true;
 }
 
 bool Manager::MANAGE(char* arg) {
-	string s_arg(arg);
 	vector<string> tokens;
-	tokenize(s_arg, tokens, " ");
+	tokenize(string(arg), tokens, " ");
 
 	int upperLimit = atoi(tokens[0].c_str()), addAmount = 0;
 
 	if (tokens.size() == 2)
 		addAmount = atoi(tokens[1].c_str());
 
+	// If upper limit and amount to add are not appropriate.
 	if (upperLimit < 1 || (tokens.size() == 2 && addAmount < 1))
 		return false;
 
+	// Select items that meet condition.
 	vector<ItemNode*> searchedNodes;
-
 	ItemNode* currentNode = static_cast<ItemNode*>(iList->getRoot());
-
 	while (currentNode != NULL) {
 		if (currentNode->getCount() <= upperLimit) {
 			currentNode->addCount(addAmount);
@@ -333,102 +325,116 @@ bool Manager::MANAGE(char* arg) {
 		currentNode = static_cast<ItemNode*>(currentNode->getNext());
 	}
 
+	// If there are no items matching condition
 	if (searchedNodes.size() == 0) {
 		cout << "No Result" << endl << endl;
 		fout << "No Result" << endl << endl;
 		return true;
 	}
 
+	// Sort by name.
 	sort(searchedNodes.begin(), searchedNodes.end(), [](ItemNode* a, ItemNode* b) {return strcmp(a->getName(), b->getName()) < 0; });
 
-	for (const auto& currentNode : searchedNodes) {
-		cout << "    " << currentNode->getName() << " ";
-		cout << static_cast<CategoryNode*>(currentNode->getCategory())->getName() << " ";
-		cout << currentNode->getCount() << " ";
-		cout << currentNode->getPrice() << endl;
+	// Output items found.
+	for (const auto& currentNode : searchedNodes)
+		printItem(currentNode);
 
-		fout << currentNode->getName() << " ";
-		fout << static_cast<CategoryNode*>(currentNode->getCategory())->getName() << " ";
-		fout << currentNode->getCount() << " ";
-		fout << currentNode->getPrice() << endl;
-	}
 	cout << endl;
 	fout << endl;
-
 	return true;
 }
 
 bool Manager::SALES(char* arg) {
-	string lineBuf;
 	vector<string> argTokens, lineTokens;
+	string lineBuf;
 	map<string, int> saleMap;
 
 	tokenize(string(arg), argTokens, " ");
-	vItem.clear();
 	size_t upperRank = atoi(argTokens[0].c_str());
+
 	if (upperRank < 1) return false;
 
+	// Handle sellFile.
 	ifstream sellFile("sell.txt");
 	while (!sellFile.eof()) {
 		getline(sellFile, lineBuf);
 		tokenize(lineBuf, lineTokens, " ");
 
+		// Empty line exception handling.
 		if (lineTokens.size() == 0)
 			break;
 
-		if (saleMap.find(lineTokens[0]) == saleMap.end()) {
+		// Get sum of sales by item.
+		if (saleMap.find(lineTokens[0]) == saleMap.end())
 			saleMap[lineTokens[0]] = atoi(lineTokens[1].c_str());
-		} else {
+		else
 			saleMap[lineTokens[0]] += atoi(lineTokens[1].c_str());
-		}
+
 		lineTokens.clear();
 	}
 	sellFile.close();
 
+	// If there are no items sold.
 	if (saleMap.size() == 0) {
 		cout << "No Result" << endl << endl;
 		fout << "No Result" << endl << endl;
 		return true;
 	}
 
+	// In this case, only sales amount is important, and
+	// number is not important.
 	for (const auto& sellEntry : saleMap) {
 		ItemNode* newNode = new ItemNode(sellEntry.first.c_str(), -1, sellEntry.second);
 		vItem.push_back(newNode);
 	}
 
+	// Sort first by name, then by price.
 	sort(vItem.begin(), vItem.end(), [](ItemNode* a, ItemNode* b) {return strcmp(a->getName(), b->getName()) < 0; });
 	sort(vItem.begin(), vItem.end(), [](ItemNode* a, ItemNode* b) {return a->getPrice() > b->getPrice(); });
 
+	// Find sales by item and print and calculate sum.
 	int currentRank = 1, currentIdx = 0;
 	do {
 		cout << "    " << vItem[currentIdx]->getName() << " - " << vItem[currentIdx]->getPrice() << endl;
 		fout << vItem[currentIdx]->getName() << " - " << vItem[currentIdx]->getPrice() << endl;
+		
+		// Part to handle duplicated price.
 		currentIdx++;
-
 		if (currentIdx < vItem.size() - 1 && vItem[currentIdx]->getPrice() != vItem[currentIdx + 1]->getPrice())
 			currentRank++;
+
 	} while (currentRank <= upperRank && currentIdx < vItem.size());
+
+	// Calculate the total sales.
 	int totalPrice = accumulate(vItem.begin(), vItem.end(), 0, [](int sum, ItemNode* node) {return sum + node->getPrice(); });
 	cout << "    " << "Total - " << totalPrice;
-	cout << endl;
-
+	cout << endl << endl;
 	fout << "Total - " << totalPrice;
-	fout << endl;
+	fout << endl << endl;
+
+	// Delete allocated memory.
+	for (auto& i : vItem)
+		delete i;
+	vItem.clear();
+
 	return true;
 }
 
 bool Manager::SAVE() {
 
-	ofstream itemFile("item2.txt", ios::trunc);
+	ofstream itemFile("item.txt", ios::trunc);
 
+	// Vectorize list of items.
 	auto itemVector = iList->getVector();
 
+	// First sort by name, then sort by category.
 	sort(itemVector.begin(), itemVector.end(), [](ItemNode* a, ItemNode* b) {return strcmp(a->getName(), b->getName()) < 0; });
-	sort(itemVector.begin(), itemVector.end(), [](ItemNode* a, ItemNode* b) {return strcmp(static_cast<CategoryNode*>(a->getCategory())->getName(), static_cast<CategoryNode*>(b->getCategory())->getName()) < 0; });
+	sort(itemVector.begin(), itemVector.end(), [](ItemNode* a, ItemNode* b) {return strcmp(a->getCategory()->getName(),b->getCategory()->getName()) < 0; });
 
+	// Save current item information in file.
 	for (const auto& item : itemVector) {
 		itemFile << item->getName() << " ";
-		itemFile << static_cast<ItemNode*>(item->getCategory())->getName() << " ";
+		itemFile << item->getCategory()->getName() << " ";
 		itemFile << item->getCount() << " ";
 		itemFile << item->getPrice() << endl;
 	}
@@ -450,4 +456,16 @@ void Manager::tokenize(const string& str, vector<string>& tokens, const string& 
 
 		pos = str.find_first_of(delimiters, lastPos);
 	}
+}
+
+void Manager::printItem(ItemNode* item, bool withCategory) {
+	cout << "    " << item->getName() << " ";
+	if (withCategory) cout << item->getCategory()->getName() << " ";
+	cout << item->getCount() << " ";
+	cout << item->getPrice() << endl;
+
+	fout << item->getName() << " ";
+	if (withCategory) fout << item->getCategory()->getName() << " ";
+	fout << item->getCount() << " ";
+	fout << item->getPrice() << endl;
 }

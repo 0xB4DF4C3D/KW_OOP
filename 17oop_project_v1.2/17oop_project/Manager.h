@@ -8,10 +8,13 @@ class Manager
 private:
 	CategoryList		*cList;
 	ItemList			*iList;
-	ofstream			fout;
-	vector<ItemNode*>	vItem;
+	ofstream			fout;	// for Logging
+	vector<ItemNode*>	vItem;	// for managing sold itmes.
 
+	// Returns tokenized string.
 	void tokenize(const string& str, vector<string>& tokens, const string& delimiters);
+
+	void printItem(ItemNode* item, bool withCategory = true);
 
 public:
 	Manager();

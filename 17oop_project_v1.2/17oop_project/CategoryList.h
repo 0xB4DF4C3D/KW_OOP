@@ -8,18 +8,21 @@ private:
 	Node*		cRoot;
 	ofstream*	fout;
 
-
 public:
 	CategoryList(ofstream* fout);
+	~CategoryList();
+	bool deleteNode(string name);
 
-	void push_back(CategoryNode* newNode);
-	void push_item(CategoryNode* category, Node* newNode);
-	
-	bool isIn(CategoryNode* category, string name);
+	bool isIn(CategoryNode* category, string name);			// Check there is item that name matches in category.
 
 	CategoryNode* getLast() const;
-	CategoryNode* getNode(string name, CategoryNode** prevNode = NULL) const;
 	Node* getRoot() const { return cRoot; }
 
-	bool deleteNode(string name);
+	// Get category whose name match. and 
+	// if want, get previous node too.
+	CategoryNode* getNode(string name, CategoryNode** prevNode = NULL) const;
+
+	void addCategory(CategoryNode* newNode);				// Add category.
+	void addItem(CategoryNode* category, Node* newNode);	// Add item to category.
+	
 };

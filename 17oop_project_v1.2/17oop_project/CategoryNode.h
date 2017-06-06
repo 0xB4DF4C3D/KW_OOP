@@ -9,7 +9,7 @@ private:
 public:
 	CategoryNode(const char name[]) { strcpy(mName, name); }
 
-	bool isMe(string name) const { return string(mName) == name; }
-	const char* getName() const { return mName; }
-	string getType() const override { return "category"; }
+	bool isMe(string name) const override { return string(mName) == name; }
+
+	const char* getName() const override { return mName; }
 };

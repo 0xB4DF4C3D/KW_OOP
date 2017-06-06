@@ -8,7 +8,7 @@ class AddressInfoMenu {
 
 	enum Menu {
 		SHOW_PEOPLE = 1, SHOW_HOUSE, CHANGE_NAME, CHANGE_ADDRESS, QUIT,
-		MENU_MAX
+		MENU_MAX // Value for automatically managing menu keys.
 	};
 
 	static const char* MenuTitle[MENU_MAX - 1];
